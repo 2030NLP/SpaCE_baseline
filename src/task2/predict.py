@@ -150,11 +150,11 @@ def main(params):
             predicted_type, predicted_tags = type_results[i], tag_results[i]
             output = []
             _output = {}
-            _output['label'] = predicted_type
+            _output['label'] = int(predicted_type)
             _output['segments'] = gather_segments(
                 js['input'], 
                 predicted_type, 
-                predicted_tags
+                predicted_tags,
             )
             output.append(_output)
             js['output'] = output

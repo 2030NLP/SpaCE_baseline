@@ -72,7 +72,7 @@ def main(params):
     if (logger):
         logger.info("Read %d test samples." % test_num)
 
-    test_tensor_data = data.process_test_data(
+    test_tensor_data = data.process_data(
         test_samples,
         tokenizer,
         params,
@@ -92,7 +92,7 @@ def main(params):
     out_file_path = os.path.join(params['output_path'], '%s_prediction.jsonlines' %params['split'])
     with open(out_file_path, 'w', encoding='utf-8') as fout:
         for i, js in enumerate(test_samples):
-            js['output'] = results[i]
+            js['output'] = int(results[i])
             json.dump(js, fout, ensure_ascii=False)
             fout.write('\n')
 

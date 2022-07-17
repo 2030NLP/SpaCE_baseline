@@ -240,6 +240,7 @@ def main(params):
     )
 
     model = load_model(params)
+    model.to(model.device)
     utils.save_model(model, tokenizer, model_output_path)
 
     if params["final_evaluate"]:
