@@ -12,6 +12,7 @@ class Task2Model(nn.Module):
 
         self.type_num = 3
         self.classification_layer = nn.Linear(bert_output_dim, self.type_num)
+        self.dropout = nn.Dropout(0.1)
 
         tag_nums = [2, 6, 3]
         self.tag_num = 12 # 2+6+3+1
@@ -82,10 +83,12 @@ class Task2Model(nn.Module):
             attention_mask=attention_mask
         )
         sentence_embeddings = outputs.pooler_output
+        # sentence_embeddings = self.dropout(sentence_embeddings)
         type_prediction = self.classification_layer(sentence_embeddings)
         classify_loss = self.criterion(type_prediction, labels)
 
         token_embeddings = outputs.last_hidden_state
+        # token_embeddings = self.dropout(token_embeddings)
         tag_prediction = self.tag_layer(token_embeddings)
         tag_masks = self.tag_mask[labels].view(-1, 1, self.tag_num)
         masked_prediction = tag_prediction * tag_masks

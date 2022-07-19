@@ -106,5 +106,6 @@ def classification_accuracy(type_prediction, tag_prediction, labels, tag_labels)
     predicted_types = np.argmax(type_prediction, axis=1)
     correct_type_num = np.sum(predicted_types == labels)
     predicted_tags = np.argmax(tag_prediction, axis=2)
-    correct_tag_num = np.sum(predicted_tags == labels)
+    # correct_tag_num = np.sum(predicted_tags == tag_labels)
+    correct_tag_num = np.sum(np.all(predicted_tags == tag_labels, axis=1))
     return correct_type_num, correct_tag_num

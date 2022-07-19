@@ -42,7 +42,9 @@ def process_data(data, tokenizer, params, test_mode=False):
         # single answer 
         # TODO: multi
         if not(test_mode):
-            for mark in outputs:
+            # for mark in outputs:
+            if (True):
+                mark = outputs[0]
                 label = mark['label']
                 segments = mark['segments']
 
@@ -82,7 +84,7 @@ def process_data(data, tokenizer, params, test_mode=False):
                 
                 all_outputs.append([tag_labels, label])
 
-            all_inputs.append([input_ids, token_type_ids, attention_mask])
+        all_inputs.append([input_ids, token_type_ids, attention_mask])
 
     input_ids = torch.tensor(np.array([x[0] for x in all_inputs]), dtype=torch.long)
     token_type_ids = torch.tensor(np.array([x[1] for x in all_inputs]), dtype=torch.long)

@@ -3,7 +3,7 @@
 #     --output_path ./data/model/task2 \
 #     --base_model hfl/chinese-bert-wwm-ext \
 #     --seq_max_length 256 \
-#     --learning_rate 1e-3 \
+#     --learning_rate 1e-5 \
 #     --epoch 4 \
 #     --train_batch_size 4 \
 #     --eval_batch_size 8 \
@@ -19,7 +19,7 @@ CUDA_VISIBLE_DEVICES=4 python ./src/task2/train.py \
     --output_path ./data/model/task2 \
     --base_model bert-base-chinese \
     --seq_max_length 256 \
-    --learning_rate 1e-3 \
+    --learning_rate 1e-5 \
     --epoch 4 \
     --train_batch_size 4 \
     --eval_batch_size 8 \

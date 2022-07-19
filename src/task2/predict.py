@@ -39,11 +39,14 @@ def predict(
                 attention_mask,
             )
 
+            type_prediction = type_prediction.detach().cpu().numpy()
+            tag_prediction = tag_prediction.detach().cpu().numpy()
             predicted_types = np.argmax(type_prediction, axis=1)
             predicted_tags = np.argmax(tag_prediction, axis=2)
             type_results.append(predicted_types)
             tag_results.append(predicted_tags)
 
+        print(len(type_results))
         type_results = np.concatenate(type_results, axis=0)
         tag_results = np.concatenate(tag_results, axis=0)
         return type_results, tag_results
@@ -144,7 +147,7 @@ def main(params):
         model, test_dataloader, params, device=device, logger=logger,
     )
     
-    out_file_path = os.path.join(params['output_path'], '%s_set_prediction.json' %params['split'])
+    out_file_path = os.path.join(params['output_path'], '%s_prediction.jsonlines' %params['split'])
     with open(out_file_path, 'w', encoding='utf-8') as fout:
         for i, js in enumerate(test_samples):
             predicted_type, predicted_tags = type_results[i], tag_results[i]

@@ -46,6 +46,7 @@ def evaluate(
             type_prediction = type_prediction.detach().cpu().numpy()
             tag_prediction = tag_prediction.detach().cpu().numpy()
             labels = labels.detach().cpu().numpy()
+            tag_labels = tag_labels.detach().cpu().numpy()
             correct_type_num, correct_tag_num = utils.classification_accuracy(type_prediction, tag_prediction, labels, tag_labels)
 
             type_accuracy += correct_type_num
@@ -171,7 +172,8 @@ def main(params):
                 tag_labels,
                 labels,
             )
-            loss = classify_loss + tag_loss
+            # loss = classify_loss + tag_loss
+            loss = classify_loss
 
             if grad_acc_steps > 1:
                 loss = loss / grad_acc_steps
