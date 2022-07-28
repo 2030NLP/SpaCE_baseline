@@ -68,7 +68,7 @@ def gather_segments(input_text, predicted_type, predicted_tags):
         }
         all_segments.append({
             'label': 0,
-            'segment': segment,
+            'segments': segment,
         })
     
     if (predicted_type[1]): # SPE1 & SPE2
@@ -89,7 +89,7 @@ def gather_segments(input_text, predicted_type, predicted_tags):
             }
         all_segments.append({
             'label': 1,
-            'segment': segment,
+            'segments': segment,
         })
 
     if (predicted_type[2]): # SPE
@@ -110,7 +110,7 @@ def gather_segments(input_text, predicted_type, predicted_tags):
             }
         all_segments.append({
             'label': 2,
-            'segment': segment,
+            'segments': segment,
         })
 
     return all_segments
