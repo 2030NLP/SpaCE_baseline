@@ -14,19 +14,27 @@ class Task2Model(nn.Module):
         self.classification_layer = nn.Linear(bert_output_dim, self.type_num)
         self.dropout = nn.Dropout(0.1)
 
-        self.tag_nums = [3, 7, 4]
-        self.tag_layers = nn.ModuleList([
-            nn.Linear(bert_output_dim, tn) for tn in self.tag_nums 
+        tag_nums = [2, 6, 3]
+        self.tag_num = 12 # 2+6+3+1
+        # self.tag_layers = [
+        #     nn.Linear(bert_output_dim, tn+1) for tn in tag_nums
+        # ]
+        self.tag_layer = nn.Linear(bert_output_dim, self.tag_num)
+        self.tag_mask = torch.tensor([
+            [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
         ])
 
-        self.classification_criterion = nn.BCEWithLogitsLoss()
-        self.tag_criterion = nn.CrossEntropyLoss(reduction='none')
+        self.criterion = torch.nn.CrossEntropyLoss()
         self.tokenizer = BertTokenizer.from_pretrained(params['base_model'])
 
         self.params = params
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() and params['cuda'] else "cpu"
         )
+
+        self.tag_mask = self.tag_mask.to(self.device)
         
         if (params['load_model_path'] is not None):
             self.load_model(params['load_model_path'])
@@ -52,13 +60,14 @@ class Task2Model(nn.Module):
         )
         sentence_embeddings = outputs.pooler_output
         type_prediction = self.classification_layer(sentence_embeddings)
-        # predicted_types = torch.argmax(type_prediction, dim=1)
-        predicted_types = (torch.sigmoid(type_prediction) > 0.5)
+        predicted_types = torch.argmax(type_prediction, dim=1)
 
         token_embeddings = outputs.last_hidden_state
-        tag_predictions = [layer(token_embeddings) for layer in self.tag_layers]
-        tag_predictions = torch.stack([torch.argmax(x, dim=2) for x in tag_predictions], dim=1) # batch_size*3*seq_len
-        return predicted_types, tag_predictions
+        tag_prediction = self.tag_layer(token_embeddings)
+        tag_masks = self.tag_mask[predicted_types].view(-1, 1, self.tag_num)
+        masked_prediction = tag_prediction * tag_masks
+
+        return type_prediction, masked_prediction
 
 
     def forward(self, 
@@ -76,21 +85,13 @@ class Task2Model(nn.Module):
         sentence_embeddings = outputs.pooler_output
         # sentence_embeddings = self.dropout(sentence_embeddings)
         type_prediction = self.classification_layer(sentence_embeddings)
-        classify_loss = self.classification_criterion(type_prediction, labels.float())
+        classify_loss = self.criterion(type_prediction, labels)
 
         token_embeddings = outputs.last_hidden_state
         # token_embeddings = self.dropout(token_embeddings)
-        tag_predictions = [layer(token_embeddings) for layer in self.tag_layers]
-        
-        tag_labels = torch.transpose(tag_labels, 0, 1)
-        tag_losses = [
-            self.tag_criterion(tag_predictions[i].view(-1, self.tag_nums[i]), tag_labels[i].reshape(-1)) for i in range(self.type_num)
-        ]
-        tag_losses = [
-            x.reshape(self.params['train_batch_size'], -1) for x in tag_losses
-        ]
-        tag_losses = torch.stack(tag_losses, dim=2) # batch_size*seq_len*3
-        tag_losses = tag_losses.mean(dim=1) # batch_size*3
-        tag_loss = torch.mean(tag_losses * labels)
+        tag_prediction = self.tag_layer(token_embeddings)
+        tag_masks = self.tag_mask[labels].view(-1, 1, self.tag_num)
+        masked_prediction = tag_prediction * tag_masks
+        tag_loss = self.criterion(masked_prediction.view(-1, self.tag_num), tag_labels.view(-1))
 
-        return type_prediction, tag_predictions, classify_loss, tag_loss
+        return type_prediction, masked_prediction, classify_loss, tag_loss

@@ -167,7 +167,7 @@ def main(params):
                 labels,
             )
 
-            if grad_acc_steps > 1:
+            if (grad_acc_steps > 1):
                 loss = loss / grad_acc_steps
 
             tr_loss += loss.item()
@@ -187,7 +187,7 @@ def main(params):
 
             loss.backward()
 
-            if (step + 1) % grad_acc_steps == 0:
+            if ((step + 1) % grad_acc_steps == 0):
                 torch.nn.utils.clip_grad_norm_(
                     model.parameters(), params["max_grad_norm"]
                 )

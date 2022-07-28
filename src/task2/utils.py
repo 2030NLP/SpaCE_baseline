@@ -102,10 +102,22 @@ def get_scheduler(params, optimizer, len_train_data, logger):
     return scheduler
 
 
-def classification_accuracy(type_prediction, tag_prediction, labels, tag_labels):
+def classification_accuracy_single(type_prediction, tag_prediction, labels, tag_labels):
     predicted_types = np.argmax(type_prediction, axis=1)
     correct_type_num = np.sum(predicted_types == labels)
     predicted_tags = np.argmax(tag_prediction, axis=2)
     # correct_tag_num = np.sum(predicted_tags == tag_labels)
     correct_tag_num = np.sum(np.all(predicted_tags == tag_labels, axis=1))
     return correct_type_num, correct_tag_num
+
+
+def classification_accuracy(type_prediction, tag_prediction, labels, tag_labels):
+    type_scores = np.all(type_prediction == labels, axis=1)
+    correct_type_num = np.sum(type_scores)
+    all_type_num = labels.shape[0]
+
+    tag_scores = np.all((tag_prediction == tag_labels), axis=2) # batch_size*3
+    tag_scores = tag_scores * labels
+    correct_tag_num = np.sum(tag_scores)
+    all_tag_num = np.sum(labels)
+    return correct_type_num, all_type_num, correct_tag_num, all_tag_num

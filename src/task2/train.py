@@ -30,7 +30,8 @@ def evaluate(
 
         type_accuracy = 0.0
         tag_accuracy = 0.0
-        nb_eval_examples = 0
+        type_eval_examples = 0
+        tag_eval_examples = 0
         nb_eval_steps = 0
     
         for step, batch in enumerate(iter_):
@@ -47,16 +48,17 @@ def evaluate(
             tag_prediction = tag_prediction.detach().cpu().numpy()
             labels = labels.detach().cpu().numpy()
             tag_labels = tag_labels.detach().cpu().numpy()
-            correct_type_num, correct_tag_num = utils.classification_accuracy(type_prediction, tag_prediction, labels, tag_labels)
+            correct_type_num, all_type_num, correct_tag_num, all_tag_num = utils.classification_accuracy(type_prediction, tag_prediction, labels, tag_labels)
 
             type_accuracy += correct_type_num
             tag_accuracy += correct_tag_num
 
-            nb_eval_examples += input_ids.size(0)
+            type_eval_examples += all_type_num
+            tag_eval_examples += all_tag_num
             nb_eval_steps += 1
 
-        normalized_type_accuracy = type_accuracy / nb_eval_examples
-        normalized_tag_accuracy = tag_accuracy / nb_eval_examples
+        normalized_type_accuracy = type_accuracy / type_eval_examples
+        normalized_tag_accuracy = tag_accuracy / tag_eval_examples
         logger.info("Type accuracy: %.5f" % normalized_type_accuracy)
         results["normalized_type_accuracy"] = normalized_type_accuracy
         logger.info("Tag accuracy: %.5f" % normalized_tag_accuracy)
@@ -172,8 +174,8 @@ def main(params):
                 tag_labels,
                 labels,
             )
-            # loss = classify_loss + tag_loss
-            loss = classify_loss
+            loss = classify_loss + tag_loss
+            # loss = classify_loss
 
             if grad_acc_steps > 1:
                 loss = loss / grad_acc_steps

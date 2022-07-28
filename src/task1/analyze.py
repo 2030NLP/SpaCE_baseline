@@ -24,6 +24,9 @@ def evaluate_split(data_path, split):
     print('Neg ratio on %s split: %d/%d = %f' %(split, neg_num, total_num, neg_num/total_num))
 
 if __name__ == '__main__':
-    evaluate_split('../../data/raw/task1', 'train')
-    evaluate_split('../../data/raw/task1', 'dev')
-    evaluate_split('../../data/raw/task1', 'test')
+    # evaluate_split('../../data/raw/task1', 'train')
+    # evaluate_split('../../data/raw/task1', 'dev')
+    # evaluate_split('../../data/raw/task1', 'test')
+    evaluate_split('../../data/raw/task1_new', 'train')
+    evaluate_split('../../data/raw/task1_new', 'dev')
+    evaluate_split('../../data/raw/task1_new', 'test')
