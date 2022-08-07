@@ -120,26 +120,27 @@ def main(params):
         train_tensor_data, sampler=train_sampler, batch_size=train_batch_size
     )
 
-    # Load eval data
-    valid_samples, valid_num = data.read_split(params["data_path"], "dev")
-    if (logger):
-        logger.info("Read %d valid samples." % valid_num)
+    if (params['do_evaluate']):
+        # Load eval data
+        valid_samples, valid_num = data.read_split(params["data_path"], "dev")
+        if (logger):
+            logger.info("Read %d valid samples." % valid_num)
 
-    valid_tensor_data = data.process_data(
-        valid_samples,
-        tokenizer,
-        params,
-    )
+        valid_tensor_data = data.process_data(
+            valid_samples,
+            tokenizer,
+            params,
+        )
 
-    valid_sampler = SequentialSampler(valid_tensor_data)
-    valid_dataloader = DataLoader(
-        valid_tensor_data, sampler=valid_sampler, batch_size=eval_batch_size
-    )
+        valid_sampler = SequentialSampler(valid_tensor_data)
+        valid_dataloader = DataLoader(
+            valid_tensor_data, sampler=valid_sampler, batch_size=eval_batch_size
+        )
 
-    # evaluate before training
-    results = evaluate(
-        model, valid_dataloader, params, device=device, logger=logger,
-    )
+        # evaluate before training
+        results = evaluate(
+            model, valid_dataloader, params, device=device, logger=logger,
+        )
 
     time_start = time.time()
 
@@ -213,20 +214,22 @@ def main(params):
         )
         utils.save_model(model, tokenizer, epoch_output_folder_path)
 
-        output_eval_file = os.path.join(epoch_output_folder_path, "eval_results.txt")
-        results = evaluate(
-            model, valid_dataloader, params, device=device, logger=logger,
-        )
-        with open(output_eval_file, 'w', encoding='utf-8') as fout:
-            fout.write(json.dumps(results, indent=4))
+        if (params['do_evaluate']):
+            output_eval_file = os.path.join(epoch_output_folder_path, "eval_results.txt")
+            results = evaluate(
+                model, valid_dataloader, params, device=device, logger=logger,
+            )
+            with open(output_eval_file, 'w', encoding='utf-8') as fout:
+                fout.write(json.dumps(results, indent=4))
 
-        ls = [best_score, results["normalized_type_accuracy"]]
-        li = [best_epoch_idx, epoch_idx]
+            ls = [best_score, results["normalized_type_accuracy"]]
+            # ls = [best_score, results["normalized_tag_accuracy"]]
+            li = [best_epoch_idx, epoch_idx]
 
-        best_score = ls[np.argmax(ls)]
-        best_epoch_idx = li[np.argmax(ls)]
-        if (logger):
-            logger.info("\n")
+            best_score = ls[np.argmax(ls)]
+            best_epoch_idx = li[np.argmax(ls)]
+            if (logger):
+                logger.info("\n")
 
     execution_time = (time.time() - time_start) / 60
 
@@ -235,28 +238,29 @@ def main(params):
         fout.write('The training took %f minutes\n' %execution_time)
     logger.info("The training took {} minutes\n".format(execution_time))
 
-    # save the best model in the parent_dir
-    logger.info("Best performance in epoch: {}".format(best_epoch_idx))
-    params["load_model_path"] = os.path.join(
-        model_output_path, 
-        "epoch_%d" %(best_epoch_idx),
-        'checkpoint.bin',
-    )
+    if (params['do_evaluate']):
+        # save the best model in the parent_dir
+        logger.info("Best performance in epoch: {}".format(best_epoch_idx))
+        params["load_model_path"] = os.path.join(
+            model_output_path, 
+            "epoch_%d" %(best_epoch_idx),
+            'checkpoint.bin',
+        )
 
-    model = load_model(params)
-    model.to(model.device)
-    utils.save_model(model, tokenizer, model_output_path)
+        model = load_model(params)
+        model.to(model.device)
+        utils.save_model(model, tokenizer, model_output_path)
 
-    if params["final_evaluate"]:
-        params["load_model_path"] = model_output_path
-        evaluate(model, valid_dataloader, params, device=device, logger=logger)
+        if params["final_evaluate"]:
+            params["load_model_path"] = model_output_path
+            evaluate(model, valid_dataloader, params, device=device, logger=logger)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # data paths
-    parser.add_argument('--data_path', type=str, default='./data/raw/task1')
-    parser.add_argument('--output_path', type=str, default='./data/model/task1')
+    parser.add_argument('--data_path', type=str, default='./data/input/task2')
+    parser.add_argument('--output_path', type=str, default='./data/model/task2')
     parser.add_argument('--load_model_path', type=str, default=None)
     parser.add_argument('--base_model', type=str, default='hfl/chinese-bert-wwm-ext')
     
@@ -269,12 +273,13 @@ if __name__ == "__main__":
     parser.add_argument('--max_grad_norm', type=float, default=1.0)
     parser.add_argument('--epoch', type=int, default=4)
     parser.add_argument('--warmup_proportion', type=float, default=0.1)
-    parser.add_argument('--train_batch_size', type=int, default=32)
-    parser.add_argument('--eval_batch_size', type=int, default=64)
+    parser.add_argument('--train_batch_size', type=int, default=4)
+    parser.add_argument('--eval_batch_size', type=int, default=8)
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1)
     parser.add_argument('--print_interval', type=int, default=5)
     parser.add_argument('--eval_interval', type=int, default=100)
     parser.add_argument('--shuffle', action='store_true')
+    parser.add_argument('--do_evaluate', action='store_true')
     parser.add_argument('--final_evaluate', action='store_true')
     parser.add_argument('--seed', type=int, default=42)
 

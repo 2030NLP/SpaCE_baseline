@@ -111,7 +111,7 @@ def main(params):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # data paths
-    parser.add_argument('--data_path', type=str, default='./data/raw/task1')
+    parser.add_argument('--data_path', type=str, default='./data/input/task1')
     parser.add_argument('--output_path', type=str, default='./data/model/task1')
     parser.add_argument('--load_model_path', type=str, default='./data/model/task1/checkpoint.bin')
     parser.add_argument('--base_model', type=str, default='hfl/chinese-bert-wwm-ext')

@@ -89,10 +89,10 @@ def main(params):
         model, test_dataloader, params, device=device, logger=logger,
     )
     
-    out_file_path = os.path.join(params['output_path'], '%s_prediction.jsonlines' %params['split'])
+    out_file_path = os.path.join(params['output_path'], '%s_prediction.jsonl' %params['split'])
     with open(out_file_path, 'w', encoding='utf-8') as fout:
         for i, js in enumerate(test_samples):
-            js['output'] = int(results[i])
+            js['judge'] = int(results[i])
             json.dump(js, fout, ensure_ascii=False)
             fout.write('\n')
 
@@ -100,7 +100,7 @@ def main(params):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # data paths
-    parser.add_argument('--data_path', type=str, default='./data/raw/task1')
+    parser.add_argument('--data_path', type=str, default='./data/input/task1')
     parser.add_argument('--output_path', type=str, default='./data/model/task1')
     parser.add_argument('--load_model_path', type=str, default='./data/model/task1/checkpoint.bin')
     parser.add_argument('--base_model', type=str, default='hfl/chinese-bert-wwm-ext')
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     parser.add_argument('--cuda', action='store_true')
 
     # evaluation arguments
-    parser.add_argument('--split', type=str, default='test', choices=['train', 'dev', 'test'])
+    parser.add_argument('--split', type=str, default='dev', choices=['train', 'dev', 'test'])
     parser.add_argument('--eval_batch_size', type=int, default=64)
     parser.add_argument('--seed', type=int, default=42)
 

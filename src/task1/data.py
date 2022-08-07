@@ -5,10 +5,15 @@ from torch.utils.data import DataLoader, TensorDataset
 
 def read_split(data_path, split, test_mode=False):
     data = []
-    with open(os.path.join(data_path, '%s.jsonlines') %(split)) as fin:
+    if not(test_mode):
+        file_name = 'task1_%s.jsonl' %(split)
+    else:
+        file_name = 'task1_%s_input.jsonl' %(split)
+
+    with open(os.path.join(data_path, file_name)) as fin:
         for line in fin:
             js = json.loads(line)
-            if not(test_mode) and (js['output'] is None):
+            if not(test_mode) and ('judge' not in js):
                 continue
 
             data.append(js)
@@ -21,11 +26,11 @@ def process_data(data, tokenizer, params, test_mode=False):
     all_labels = []
 
     for js in data:
-        text = js['input']
+        text = js['context']
         all_text.append(text)
 
         if not(test_mode):
-            label = js['output']
+            label = js['judge']
             all_labels.append(label)
 
     tokenize_result = tokenizer(

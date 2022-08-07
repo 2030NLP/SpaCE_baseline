@@ -54,21 +54,25 @@ def gather_segments(input_text, predicted_type, predicted_tags):
     all_segments = []
 
     if (predicted_type[0]): # text1 & text2
-        text1_indices, text2_indices = [], []
+        num_tags = 2
+        indices = [[] for i in range(num_tags)]
+        names = ['text1', 'text2']
         for i, x in enumerate(predicted_tags[0]):
-            if (x == 1):
-                text1_indices.append(i-1) # one pos-bias for [CLS]
-            elif (x == 2):
-                text2_indices.append(i-1)
-        text1_text = ''.join([input_text[i] for i in text1_indices])
-        text2_text = ''.join([input_text[i] for i in text2_indices])
-        segment = {
-            'text1': {'text': text1_text, 'indices': text1_indices},
-            'text2': {'text': text2_text, 'indices': text2_indices},
-        }
+            if (x >= 1) and (x <= 2):
+                indices[x-1].append(i-1)
+        texts = [
+            ''.join([input_text[i] for i in indices[j]]) for j in range(num_tags)
+        ]
+        segment = []
+        for i in range(num_tags):
+            segment.append({
+                'role': names[i],
+                'text': texts[i],
+                'idxes': indices[i],
+            })
         all_segments.append({
-            'label': 0,
-            'segments': segment,
+            'type': 'B',
+            'fragments': segment,
         })
     
     if (predicted_type[1]): # SPE1 & SPE2
@@ -81,15 +85,16 @@ def gather_segments(input_text, predicted_type, predicted_tags):
         texts = [
             ''.join([input_text[i] for i in indices[j]]) for j in range(num_tags)
         ]
-        segment = {}
+        segment = []
         for i in range(num_tags):
-            segment[names[i]] = {
+            segment.append({
+                'role': names[i],
                 'text': texts[i],
-                'indices': indices[i],
-            }
+                'idxes': indices[i],
+            })
         all_segments.append({
-            'label': 1,
-            'segments': segment,
+            'type': 'B',
+            'fragments': segment,
         })
 
     if (predicted_type[2]): # SPE
@@ -102,15 +107,16 @@ def gather_segments(input_text, predicted_type, predicted_tags):
         texts = [
             ''.join([input_text[i] for i in indices[j]]) for j in range(num_tags)
         ]
-        segment = {}
+        segment = []
         for i in range(num_tags):
-            segment[names[i]] = {
+            segment.append({
+                'role': names[i],
                 'text': texts[i],
-                'indices': indices[i],
-            }
+                'idxes': indices[i],
+            })
         all_segments.append({
-            'label': 2,
-            'segments': segment,
+            'type': 'C',
+            'fragments': segment,
         })
 
     return all_segments
@@ -159,16 +165,16 @@ def main(params):
         model, test_dataloader, params, device=device, logger=logger,
     )
     
-    out_file_path = os.path.join(params['output_path'], '%s_prediction.jsonlines' %params['split'])
+    out_file_path = os.path.join(params['output_path'], '%s_prediction.jsonl' %params['split'])
     with open(out_file_path, 'w', encoding='utf-8') as fout:
         for i, js in enumerate(test_samples):
             predicted_type, predicted_tags = type_results[i], tag_results[i]
             output = gather_segments(
-                js['input'], 
+                js['context'], 
                 predicted_type, 
                 predicted_tags,
             )
-            js['output'] = output
+            js['reasons'] = output
             json.dump(js, fout, ensure_ascii=False)
             fout.write('\n')
 

@@ -30,7 +30,8 @@ def evaluate(
 
         type_accuracy = 0.0
         tag_accuracy = 0.0
-        nb_eval_examples = 0
+        all_type_count = 0.0
+        all_tag_count = 0.0
         nb_eval_steps = 0
     
         for step, batch in enumerate(iter_):
@@ -47,16 +48,17 @@ def evaluate(
             labels = labels.detach().cpu().numpy()
             tag_prediction = tag_prediction.detach().cpu().numpy()
             tag_labels = tag_labels.detach().cpu().numpy()
-            correct_type_num, correct_tag_num = utils.classification_accuracy(type_prediction, tag_prediction, labels, tag_labels)
+            correct_type_num, all_type_num, correct_tag_num, all_tag_num = utils.classification_accuracy(type_prediction, tag_prediction, labels, tag_labels)
 
             type_accuracy += correct_type_num
             tag_accuracy += correct_tag_num
 
-            nb_eval_examples += input_ids.size(0)
+            all_type_count += all_type_num
+            all_tag_count += all_tag_num
             nb_eval_steps += 1
 
-        normalized_type_accuracy = type_accuracy / nb_eval_examples
-        normalized_tag_accuracy = tag_accuracy / nb_eval_examples
+        normalized_type_accuracy = type_accuracy / all_type_count
+        normalized_tag_accuracy = tag_accuracy / all_tag_count
         logger.info("Type accuracy: %.5f" % normalized_type_accuracy)
         results["normalized_type_accuracy"] = normalized_type_accuracy
         logger.info("Tag accuracy: %.5f" % normalized_tag_accuracy)
@@ -114,7 +116,7 @@ def main(params):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # data paths
-    parser.add_argument('--data_path', type=str, default='./data/raw/task2')
+    parser.add_argument('--data_path', type=str, default='./data/input/task2')
     parser.add_argument('--output_path', type=str, default='./data/model/task2')
     parser.add_argument('--load_model_path', type=str, default='./data/model/task2/checkpoint.bin')
     parser.add_argument('--base_model', type=str, default='hfl/chinese-bert-wwm-ext')

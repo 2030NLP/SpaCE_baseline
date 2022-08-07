@@ -22,7 +22,7 @@ def main(params):
         correct, total = 0, 0
         for x, y in zip(answers, predictions):
             total += 1
-            if (x['input'] == y['input']) and (x['output'] == y['output']):
+            if (x['context'] == y['context']) and (x['judge'] == y['judge']):
                 correct += 1
 
         status, score = 'Accepted', correct/total

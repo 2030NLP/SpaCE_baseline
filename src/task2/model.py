@@ -48,11 +48,10 @@ class Task2Model(nn.Module):
         outputs = self.bert_model(
             input_ids=input_ids, 
             token_type_ids=token_type_ids, 
-            attention_mask=attention_mask
+            attention_mask=attention_mask,
         )
         sentence_embeddings = outputs.pooler_output
         type_prediction = self.classification_layer(sentence_embeddings)
-        # predicted_types = torch.argmax(type_prediction, dim=1)
         predicted_types = (torch.sigmoid(type_prediction) > 0.5)
 
         token_embeddings = outputs.last_hidden_state
@@ -71,7 +70,7 @@ class Task2Model(nn.Module):
         outputs = self.bert_model(
             input_ids=input_ids, 
             token_type_ids=token_type_ids, 
-            attention_mask=attention_mask
+            attention_mask=attention_mask,
         )
         sentence_embeddings = outputs.pooler_output
         # sentence_embeddings = self.dropout(sentence_embeddings)
@@ -82,15 +81,15 @@ class Task2Model(nn.Module):
         # token_embeddings = self.dropout(token_embeddings)
         tag_predictions = [layer(token_embeddings) for layer in self.tag_layers]
         
-        tag_labels = torch.transpose(tag_labels, 0, 1)
+        tag_labels = torch.transpose(tag_labels, 0, 1) # batch_size*seq_len*type_num
         tag_losses = [
             self.tag_criterion(tag_predictions[i].view(-1, self.tag_nums[i]), tag_labels[i].reshape(-1)) for i in range(self.type_num)
         ]
         tag_losses = [
-            x.reshape(self.params['train_batch_size'], -1) for x in tag_losses
+            x.reshape(-1, self.params['seq_max_length']) for x in tag_losses
         ]
-        tag_losses = torch.stack(tag_losses, dim=2) # batch_size*seq_len*3
-        tag_losses = tag_losses.mean(dim=1) # batch_size*3
+        tag_losses = torch.stack(tag_losses, dim=2) # batch_size*seq_len*type_num
+        tag_losses = tag_losses.mean(dim=1) # batch_size*type_num
         tag_loss = torch.mean(tag_losses * labels)
 
         return type_prediction, tag_predictions, classify_loss, tag_loss
