@@ -3,4 +3,6 @@ model/
 src/task1/__pycache__/
 src/task2/__pycache__/
 src/task2/*_old.py
+src/task3/__pycache__/
+src/task3/test/
 src/patches/

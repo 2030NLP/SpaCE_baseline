@@ -36,14 +36,14 @@ def main(params):
         'accuracy': score,
     }
 
-    return final_result
+    return status, final_result
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # data paths
-    parser.add_argument('--answer_path', type=str, default='./data/raw/task1/test.jsonlines')
-    parser.add_argument('--prediction_path', type=str, default='./data/raw/task1/test.jsonlines')
+    parser.add_argument('--answer_path', type=str, default='./data/input/task1/task1_test.jsonl')
+    parser.add_argument('--prediction_path', type=str, default='./data/input/task1/task1_test.jsonl')
 
     args = parser.parse_args()
     params = args.__dict__

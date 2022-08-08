@@ -60,11 +60,8 @@ def main(params):
                     predicted_type[type_id] = 1
                     
                 for golden in x['reasons']:
-                    if (golden['type'] != prediction['type']):
-                        continue
-
                     tag_golden, tag_prediction = golden['fragments'], prediction['fragments']
-                    if (prediction_level == 'loose'):
+                    if (prediction_level == 'loose'): # 按文本重合度打分（不要求类别相同）
                         input_set, target_set = set(), set()
                         for t in tag_prediction:
                             input_set |= set(t['idxes'])
@@ -74,7 +71,10 @@ def main(params):
                         n_inter, n_input, n_target = intersection(input_set, target_set)
                         precision, recall, f1 = f1_score(n_inter, n_input, n_target)
                     
-                    elif (prediction_level == 'strict'):
+                    elif (prediction_level == 'strict'): # 按元素重合度打分（要求类别相同）
+                        if (golden['type'] != prediction['type']):
+                            continue
+
                         local_intersection, local_input_len, local_target_len = 0, 0, 0
                         for t1 in tag_prediction:
                             found = False
@@ -124,12 +124,12 @@ def main(params):
         print('Average precision: %f' %(final_result['avg_precision']))
         print('Average recall: %f' %(final_result['avg_recall']))
 
-    return final_result
+    return status, final_result
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--answer_path', type=str, default='./data/raw/task2_new/dev.jsonlines')
-    parser.add_argument('--prediction_path', type=str, default='./data/raw/task2_new/dev.jsonlines')
+    parser.add_argument('--answer_path', type=str, default='./data/input/task2/task2_dev.jsonl')
+    parser.add_argument('--prediction_path', type=str, default='./data/input/task2/task2_dev.jsonl')
     parser.add_argument('--prediction_level', type=str, choices=['loose', 'medium', 'strict'], default='strict')
 
     args = parser.parse_args()
