@@ -101,11 +101,11 @@ def main(params):
                 correct_type_num += 1
 
         status = 'Accepted'
-        type_accuracy = correct_type_num/len(precisions)
-        avg_precision = sum(precisions)/len(precisions)
-        avg_recall = sum(recalls)/len(recalls)
+        type_accuracy = correct_type_num/len(answers)
+        avg_precision = sum(precisions)/len(answers)
+        avg_recall = sum(recalls)/len(answers)
         micro_f1 = 2*(avg_precision*avg_recall)/(avg_precision+avg_recall)
-        macro_f1 = sum(f1s)/len(f1s)
+        macro_f1 = sum(f1s)/len(answers)
 
         final_result = {
             'type_accuracy': type_accuracy,
@@ -124,6 +124,7 @@ def main(params):
         print('Average precision: %f' %(final_result['avg_precision']))
         print('Average recall: %f' %(final_result['avg_recall']))
 
+    return final_result
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -29,6 +29,14 @@ def main(params):
 
     print(status)
     print('Accuracy: %d/%d = %f' %(correct, total, score))
+    
+    final_result = {
+        'correct': correct,
+        'total': total,
+        'accuracy': score,
+    }
+
+    return final_result
 
 
 if __name__ == '__main__':
