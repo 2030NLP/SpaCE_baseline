@@ -14,7 +14,7 @@ def intersection_and_union(input, target):
     return len(intersection), len(union)
 
 
-def cal_similarity(golden_tuple, predicted_tuple, corefs):
+def cal_similarity(golden_tuple, predicted_tuple, corefs, params):
     if (len(golden_tuple) != len(predicted_tuple)):
         return 0
 
@@ -62,6 +62,11 @@ def cal_similarity(golden_tuple, predicted_tuple, corefs):
                                 n_inter, n_union = intersection_and_union(p_idx, corefed_g_idx)
                                 element_sim_score = max(element_sim_score, n_inter/n_union)
                     
+                    if (params['debug']):
+                        print('Golden entity: ', g_element)
+                        print('Predicted entity: ', p_element)
+                        print('Score: ', element_sim_score)
+                        input()
 
         if ((i == 0) or (i == 1)) and (element_sim_score == 0): # 关键实体（空间实体）不能完全错误
             return 0
@@ -97,6 +102,10 @@ def main(params):
             if (x['context'] != y['context']):
                 continue 
             
+            if (params['debug']):
+                print(x['context'])
+                print(x['corefs'])
+            
             # build coreference set
             corefs = {}
             for coref_set in x['corefs']:
@@ -119,6 +128,7 @@ def main(params):
                         golden_outputs[i],
                         predicted_outputs[j],
                         corefs,
+                        params,
                     )
 
             max_bipartite_score = KM_algorithm(pair_scores)
@@ -151,12 +161,13 @@ def main(params):
             'avg_recall': avg_recall,
         }
 
-    # print(status)
-    # if (final_result is not None):
-    #     print('Micro F1 score: %f' %(final_result['micro_f1']))
-    #     print('Macro F1 score: %f' %(final_result['macro_f1']))
-    #     print('Average precision: %f' %(final_result['avg_precision']))
-    #     print('Average recall: %f' %(final_result['avg_recall']))
+    if (params['debug']):
+        print(status)
+        if (final_result is not None):
+            print('Micro F1 score: %f' %(final_result['micro_f1']))
+            print('Macro F1 score: %f' %(final_result['macro_f1']))
+            print('Average precision: %f' %(final_result['avg_precision']))
+            print('Average recall: %f' %(final_result['avg_recall']))
 
     return status, final_result
 
@@ -165,6 +176,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--answer_path', type=str, default='./data/input/task3/task3_test.jsonl')
     parser.add_argument('--prediction_path', type=str, default='./data/input/task3/task3_test.jsonl')
+    parser.add_argument('--debug', action='store_true')
 
     args = parser.parse_args()
     params = args.__dict__
