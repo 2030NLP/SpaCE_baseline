@@ -3,6 +3,7 @@ import argparse
 import json
 import numpy as np
 import scipy
+import traceback
 
 
 def intersection_and_union(input, target):
@@ -36,14 +37,31 @@ def cal_similarity(golden_tuple, predicted_tuple, corefs):
                     element_sim_score = 1.0
             else: # 原文片段类元素
                 p_idx, g_idx = p_element['idxes'], g_element['idxes']
-                if (str(g_idx) in corefs): # 取所有共指中重合度最高的一个
-                    element_sim_score = 0
-                    for c in corefs[str(g_idx)]:
-                        n_inter, n_union = intersection_and_union(p_idx, c['idxes'])
-                        element_sim_score = max(element_sim_score, n_inter/n_union)
-                else:
+                p_text, g_text = p_element['text'], g_element['text']
+
+                # 计算原文本的相似度
+                n_inter, n_union = intersection_and_union(p_text, g_text)
+                element_sim_score = n_inter/n_union
+                # if (str(g_idx) in corefs): # 取所有共指中重合度最高的一个
+                #     for c in corefs[str(g_idx)]:
+                #         n_inter, n_union = intersection_and_union(p_idx, c['idxes'])
+                #         element_sim_score = max(element_sim_score, n_inter/n_union)
+
+                if ((i == 0) or (i == 1)): # 如果是空间实体，使用idx评价
                     n_inter, n_union = intersection_and_union(p_idx, g_idx)
                     element_sim_score = n_inter/n_union
+
+                    # 尝试取所有共指中重合度最高的一个
+                    g_idx_set = set(g_idx)
+                    for key in corefs:
+                        key_idx_set = set(eval(key))
+                        if (key_idx_set.issubset(g_idx_set)):
+                            diff_set = g_idx_set - key_idx_set
+                            for c in corefs[key]:
+                                corefed_g_idx = set(c['idxes']) | diff_set
+                                n_inter, n_union = intersection_and_union(p_idx, corefed_g_idx)
+                                element_sim_score = max(element_sim_score, n_inter/n_union)
+                    
 
         if ((i == 0) or (i == 1)) and (element_sim_score == 0): # 关键实体（空间实体）不能完全错误
             return 0
@@ -133,12 +151,12 @@ def main(params):
             'avg_recall': avg_recall,
         }
 
-    print(status)
-    if (final_result is not None):
-        print('Micro F1 score: %f' %(final_result['micro_f1']))
-        print('Macro F1 score: %f' %(final_result['macro_f1']))
-        print('Average precision: %f' %(final_result['avg_precision']))
-        print('Average recall: %f' %(final_result['avg_recall']))
+    # print(status)
+    # if (final_result is not None):
+    #     print('Micro F1 score: %f' %(final_result['micro_f1']))
+    #     print('Macro F1 score: %f' %(final_result['macro_f1']))
+    #     print('Average precision: %f' %(final_result['avg_precision']))
+    #     print('Average recall: %f' %(final_result['avg_recall']))
 
     return status, final_result
 
@@ -152,4 +170,12 @@ if __name__ == '__main__':
     params = args.__dict__
     print(params)
     
-    main(params)
+    try:
+        status, final_result = main(params)
+    except:
+        traceback.print_exc()
+        status, final_result = 'Error in execution', None
+
+    print(status)
+    if (final_result is not None):
+        print(json.dumps(final_result, indent=2))

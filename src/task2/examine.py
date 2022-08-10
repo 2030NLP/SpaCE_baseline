@@ -1,6 +1,7 @@
 import os
 import argparse
 import json
+import traceback
 
 
 def intersection(input, target):
@@ -115,15 +116,6 @@ def main(params):
             'avg_recall': avg_recall,
         }
 
-    print(status)
-    if (final_result is not None):
-        print('Result on %s prediction level:' %prediction_level)
-        print('Type accuracy: %f' %(final_result['type_accuracy']))
-        print('Micro F1 score: %f' %(final_result['micro_f1']))
-        print('Macro F1 score: %f' %(final_result['macro_f1']))
-        print('Average precision: %f' %(final_result['avg_precision']))
-        print('Average recall: %f' %(final_result['avg_recall']))
-
     return status, final_result
 
 if __name__ == '__main__':
@@ -136,4 +128,12 @@ if __name__ == '__main__':
     params = args.__dict__
     print(params)
     
-    main(params)
+    try:
+        status, final_result = main(params)
+    except:
+        traceback.print_exc()
+        status, final_result = 'Error in execution', None
+
+    print(status)
+    if (final_result is not None):
+        print(json.dumps(final_result, indent=2))

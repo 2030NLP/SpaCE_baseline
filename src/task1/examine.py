@@ -1,7 +1,7 @@
 import os
 import argparse
-import torch
 import json
+import traceback
 
 
 def main(params):
@@ -49,4 +49,8 @@ if __name__ == '__main__':
     params = args.__dict__
     print(params)
     
-    main(params)
+    try:
+        status, final_result = main(params)
+    except:
+        traceback.print_exc()
+        status, final_result = 'Error in execution', None
