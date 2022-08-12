@@ -21,25 +21,29 @@ def f1_score(n_inter, n_input, n_target):
 
 
 def main(params):
-    answers = []
+    answers = {}
     with open(params['answer_path'], 'r', encoding='utf-8') as fin:
         for line in fin:
-            answers.append(json.loads(line))
+            js = json.loads(line)
+            answers[js['qid']] = js
 
-    predictions = []
+    predictions = {}
     with open(params['prediction_path'], 'r', encoding='utf-8') as fin:
         for line in fin:
-            predictions.append(json.loads(line))
+            js = json.loads(line)
+            if ('qid' in js):
+                predictions[js['qid']] = js
 
     prediction_level = params['prediction_level']
-    if (len(answers) != len(predictions)):
-        status, final_result = 'Length dismatch', None
-    else:
-        precisions, recalls, f1s = [], [], []
-        correct_type_num = 0
-        for x, y in zip(answers, predictions):
-            if (x['context'] != y['context']):
-                continue 
+    precisions, recalls, f1s = [], [], []
+    correct_type_num = 0
+    for qid in answers:
+        if (qid not in predictions):
+            precisions.append(0)
+            recalls.append(0)
+            f1s.append(0)
+        else:
+            x, y = answers[qid], predictions[qid]
             
             max_precision, max_recall, max_f1 = 0.0, 0.0, 0.0
             predicted_type = [0, 0, 0]
@@ -105,7 +109,10 @@ def main(params):
         type_accuracy = correct_type_num/len(answers)
         avg_precision = sum(precisions)/len(answers)
         avg_recall = sum(recalls)/len(answers)
-        micro_f1 = 2*(avg_precision*avg_recall)/(avg_precision+avg_recall)
+        if (avg_precision+avg_recall == 0):
+            micro_f1 = 0
+        else:
+            micro_f1 = 2*(avg_precision*avg_recall)/(avg_precision+avg_recall)
         macro_f1 = sum(f1s)/len(answers)
 
         final_result = {
