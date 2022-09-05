@@ -1,6 +1,7 @@
-CUDA_VISIBLE_DEVICES=0 python ./src/task2/train.py \
+
+CUDA_VISIBLE_DEVICES=0 python ./src/task2_new/train.py \
     --data_path ./data/input/task2 \
-    --output_path ./data/model/task2 \
+    --output_path ./data/model/task2_new \
     --base_model hfl/chinese-bert-wwm-ext \
     --seq_max_length 256 \
     --learning_rate 1e-5 \
