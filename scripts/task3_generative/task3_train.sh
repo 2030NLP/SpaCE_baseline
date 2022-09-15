@@ -1,0 +1,14 @@
+PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python CUDA_VISIBLE_DEVICES=4 python ./src/task3_generative/train.py \
+    --data_path ./data/input/task3 \
+    --output_path ./data/model/task3_generative \
+    --base_model google/mt5-base \
+    --seq_max_length 512 \
+    --learning_rate 1e-5 \
+    --epoch 4 \
+    --train_batch_size 4 \
+    --eval_batch_size 8 \
+    --print_interval 100 \
+    --eval_interval 100 \
+    --save_interval 200 \
+    --seed 42 \
+    --cuda 

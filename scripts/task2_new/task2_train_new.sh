@@ -1,4 +1,3 @@
-
 CUDA_VISIBLE_DEVICES=0 python ./src/task2_new/train.py \
     --data_path ./data/input/task2 \
     --output_path ./data/model/task2_new \
