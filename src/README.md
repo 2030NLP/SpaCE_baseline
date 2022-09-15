@@ -7,7 +7,8 @@
    ├─task1 (task1的评测代码与baseline)
    ├─task2 (task2的评测代码与旧baseline，模型占空间较小，分数较低)
    ├─task2_new (task2的评测代码与新baseline，模型占空间较大，分数稍高)
-   └─task3 (task3的评测代码)
+   ├─task3_extractive (task3的评测代码与事件抽取式baseline)
+   └─task3_generative (task3的评测代码与Seq2Seq生成式baseline)
 ```
 
 # Baseline代码文件说明
